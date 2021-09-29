@@ -1,0 +1,7 @@
+flask-responses
+Flask
+waitress
+numpy>=1.13
+allennlp==0.9.0
+git+git://github.com/gruentee/fever-scorer.git
+fever-drqa

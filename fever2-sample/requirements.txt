@@ -1,0 +1,2 @@
+-e file:///home/connzen/Projekte/Python/fever-api
+-e file:///home/connzen/Projekte/Python/fever-allennlp
