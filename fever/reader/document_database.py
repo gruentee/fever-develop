@@ -12,7 +12,7 @@ class FEVERDocumentDatabase(object):
         self._connection = self.connect(cached_path(path))
 
     @staticmethod
-    def connect(path:str):
+    def connect(path: str):
         try:
             return sqlite3.connect(path, check_same_thread=False)
         except sqlite3.Error as e:
@@ -20,11 +20,11 @@ class FEVERDocumentDatabase(object):
             logging.critical("Unable to load sqlite database")
             raise e
 
-    def get_doc_lines(self,page_title:str) -> str:
+    def get_doc_lines(self, page_title: str) -> str:
         cursor = self._connection.cursor()
         cursor.execute("SELECT lines FROM documents WHERE id = :page_title",
                        ({
-                           "page_title":unicodedata.normalize("NFD",page_title,)
+                           "page_title": unicodedata.normalize("NFD", page_title, )
                        }))
         result = cursor.fetchone()
         cursor.close()
@@ -33,7 +33,6 @@ class FEVERDocumentDatabase(object):
             raise Exception("Document not found")
 
         return result[0].split("\n")
-
 
     def get_doc_ids(self):
         cursor = self._connection.cursor()

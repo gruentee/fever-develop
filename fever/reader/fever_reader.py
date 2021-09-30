@@ -1,13 +1,13 @@
 import json
 
 from overrides import overrides
-from typing import Dict, Union, Iterable, List, Tuple, Optional
+from typing import Dict, Union, Iterable, List, Tuple, Optional, OrderedDict
 
 from allennlp.data import Tokenizer, TokenIndexer, Instance
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
 from allennlp.data.fields import TextField, LabelField, MetadataField
 from allennlp.data.token_indexers import SingleIdTokenIndexer
-from allennlp.data.tokenizers import WordTokenizer
+from allennlp.data.tokenizers import SpacyTokenizer
 
 from fever.reader.document_database import FEVERDocumentDatabase
 from fever.reader.preprocessing import FEVERInstanceGenerator, ConcatenateEvidence
@@ -21,15 +21,20 @@ class FEVERDatasetReader(DatasetReader):
                  wiki_tokenizer: Tokenizer = None,
                  claim_tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 instance_generator: FEVERInstanceGenerator = None) -> None:
+                 instance_generator: FEVERInstanceGenerator = None,
+                 **kwargs) -> None:
 
-        super().__init__()
+        super().__init__(
+            manual_distributed_sharding=True,
+            manual_multiprocess_sharding=True,
+            **kwargs
+        )
         if type(database) == str:
             database = FEVERDocumentDatabase(database)
 
         self._database = database
-        self._wiki_tokenizer = wiki_tokenizer or WordTokenizer()
-        self._claim_tokenizer = claim_tokenizer or WordTokenizer()
+        self._wiki_tokenizer = wiki_tokenizer or SpacyTokenizer(pos_tags=False)
+        self._claim_tokenizer = claim_tokenizer or SpacyTokenizer(pos_tags=False)
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
         self._instance_generator = instance_generator or ConcatenateEvidence()
 
@@ -64,8 +69,8 @@ class FEVERDatasetReader(DatasetReader):
                          "premise_tokens": evidence_tokens,
                          "hypothesis_tokens": claim_tokens, }
 
-        instance_dict = {"premise": TextField(evidence_tokens, self._token_indexers),
-                         "hypothesis": TextField(claim_tokens, self._token_indexers),
+        instance_dict = {"premise": TextField(evidence_tokens),
+                         "hypothesis": TextField(claim_tokens),
                          "metadata": MetadataField(instance_meta)
                          }
 
@@ -73,6 +78,10 @@ class FEVERDatasetReader(DatasetReader):
             instance_dict["label"] = LabelField(label)
 
         return Instance(instance_dict)
+
+    def apply_token_indexers(self, instance: Instance) -> None:
+        instance.fields["premise"].token_indexers = self.token_indexers
+        instance.fields["hypothesis"].token_indexers = self.token_indexers
 
     def generate_instances(self,
                            claim_id: int,
@@ -87,7 +96,7 @@ class FEVERDatasetReader(DatasetReader):
     @overrides
     def _read(self, file_path: str):
         with open(file_path, "r") as f:
-            for line in f:
+            for line in self.shard_iterable(f):
                 instance = json.loads(line)
 
                 claim_id: int = instance['id']

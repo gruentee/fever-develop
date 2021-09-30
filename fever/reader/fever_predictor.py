@@ -6,7 +6,6 @@ from allennlp.data import Tokenizer, TokenIndexer, Instance
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
 from allennlp.data.fields import TextField, LabelField, MetadataField
 from allennlp.data.token_indexers import SingleIdTokenIndexer
-from allennlp.data.tokenizers import WordTokenizer
 from allennlp.models import Model
 from allennlp.predictors import Predictor
 from fever.reader.document_database import FEVERDocumentDatabase

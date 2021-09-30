@@ -1,7 +1,8 @@
-flask-responses
+torch==1.9.0
 Flask
-waitress
-numpy>=1.13
-allennlp==0.9.0
-git+git://github.com/gruentee/fever-scorer.git
+allennlp==2.7.0
 fever-drqa
+flask-responses
+git+git://github.com/gruentee/fever-scorer.git
+numpy
+waitress
