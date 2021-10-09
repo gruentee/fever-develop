@@ -80,8 +80,8 @@ class FEVERDatasetReader(DatasetReader):
         return Instance(instance_dict)
 
     def apply_token_indexers(self, instance: Instance) -> None:
-        instance.fields["premise"].token_indexers = self.token_indexers
-        instance.fields["hypothesis"].token_indexers = self.token_indexers
+        instance.fields["premise"].token_indexers = self._token_indexers
+        instance.fields["hypothesis"].token_indexers = self._token_indexers
 
     def generate_instances(self,
                            claim_id: int,

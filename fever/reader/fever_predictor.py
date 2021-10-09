@@ -85,6 +85,7 @@ class FEVERPredictor(Predictor):
 
             return out_dict
 
+        self._dataset_reader.apply_token_indexers(instance)
         outputs = self._model.forward_on_instance(instance)
         return sanitize(outputs)
 
